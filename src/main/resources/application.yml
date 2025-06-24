@@ -1,6 +1,11 @@
 spring:
   application:
     name: patient
+  config:
+    import: "optional:configserver:http://localhost:8071/"
+  profiles:
+    active:
+      - "prod"
 
   datasource:
     url: jdbc:mysql://localhost:3306/patient?createDatabaseIfNotExist=true
@@ -28,3 +33,12 @@ logging:
           descriptor:
             sql:
               BasicBinder: TRACE
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

@@ -1,7 +1,9 @@
 package com.alienworkspace.cdr.patient;
 
+import com.alienworkspace.cdr.patient.config.AppConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 /**
  * Main application class for the Demographic module.
@@ -15,6 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * <p>Author: Codeium Engineering Team</p>
  */
 @SpringBootApplication
+@EnableConfigurationProperties(value = {AppConfig.class})
 public class PatientApplication {
 
     /**

@@ -8,7 +8,7 @@ LABEL authors="Ikenumah (enumahinm@gmail.com)"
 WORKDIR /app
 
 # Add the application jar file to the image
-COPY target/patient-0.0.1-SNAPSHOT.jar patient-service.jar
+COPY target/patient-0.0.1-SNAPSHOT.jar patient-microservice.jar
 
 # When a container starts from this image, run the jar
-ENTRYPOINT ["java", "-jar", "patient-service.jar"]
+ENTRYPOINT ["java", "-jar", "patient-microservice.jar"]

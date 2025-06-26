@@ -3,9 +3,9 @@ package com.alienworkspace.cdr.patient.model.audit;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import jakarta.persistence.PrePersist;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -67,6 +67,9 @@ public class AuditTrail {
     @Column(name = "uuid", updatable = false, nullable = false, unique = true)
     private String uuid = UUID.randomUUID().toString();
 
+    /**
+     * Generate a UUID if one is not already set.
+     */
     @PrePersist
     public void generateUuid() {
         if (uuid == null) {

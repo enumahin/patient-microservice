@@ -97,6 +97,9 @@ public interface PatientMapper {
         Patient patient = Patient.builder()
                 .allergies(patientDto.getAllergies())
                 .build();
+        if (patientDto.getPatientId() != null) {
+            patient.setPatientId(patientDto.getPatientId());
+        }
         AuditTrailMapper.mapFromDto(patientDto, patient);
         return patient;
     }

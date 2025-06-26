@@ -1,6 +1,7 @@
 package com.alienworkspace.cdr.patient.service;
 
 import com.alienworkspace.cdr.model.dto.patient.PatientDto;
+import com.alienworkspace.cdr.model.dto.person.PersonDto;
 import com.alienworkspace.cdr.model.helper.RecordVoidRequest;
 import java.util.List;
 
@@ -70,6 +71,14 @@ public interface PatientService {
      * @return PatientDto
      */
     PatientDto getPatientByIdentifier(String value);
+
+    /**
+     * Gets a Person.
+     *
+     * @param id The id of the Person
+     * @return PersonDto
+     */
+    PersonDto getPerson(long id, boolean includeVoided);
 
     /**
      * Gets all Patients.

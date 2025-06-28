@@ -1,12 +1,8 @@
 package com.alienworkspace.cdr.patient.service.impl;
 
 import com.alienworkspace.cdr.model.dto.patient.PatientDto;
-import com.alienworkspace.cdr.model.dto.person.PersonAddressDto;
-import com.alienworkspace.cdr.model.dto.person.PersonAttributeDto;
 import com.alienworkspace.cdr.model.dto.person.PersonDto;
-import com.alienworkspace.cdr.model.dto.person.PersonNameDto;
 import com.alienworkspace.cdr.model.helper.RecordVoidRequest;
-import com.alienworkspace.cdr.model.helper.ResponseDto;
 import com.alienworkspace.cdr.patient.exception.ResourceNotFoundException;
 import com.alienworkspace.cdr.patient.helpers.CurrentUser;
 import com.alienworkspace.cdr.patient.model.Patient;
@@ -85,9 +81,9 @@ public class PatientServiceImpl implements PatientService {
      */
     @Override
     @Transactional
-    public PatientDto createPatient(PatientDto patientDto) {
+    public PatientDto createPatient(PatientDto patientDto, String correlationId) {
         try {
-            PersonDto person = demographicFeignClient.addPerson(patientDto.getPerson()).getBody();
+            PersonDto person = demographicFeignClient.addPerson(correlationId, patientDto.getPerson()).getBody();
             if (person == null || person.getPersonId() == null) {
                 throw new IllegalArgumentException("Error creating person: " + person);
             }
@@ -192,13 +188,13 @@ public class PatientServiceImpl implements PatientService {
      * @throws ResourceNotFoundException if the patient is not found
      */
     @Override
-    public PatientDto getPatient(long id) {
+    public PatientDto getPatient(long id, String correlationId) {
         PatientDto patientDto = patientMapper.toPatientDto(patientRepository.findById(id)
                 .orElseThrow(() -> {
-                    LOGGER.error("Patient With Id: {} not found", id);
+                    LOGGER.error("Patient With Id: {} not found. CorrelationId: {}", id, correlationId);
                     return new ResourceNotFoundException("Patient", "Id", String.valueOf(id));
                 }));
-        patientDto.setPerson(getPerson(patientDto.getPatientId(), false));
+        patientDto.setPerson(getPerson(patientDto.getPatientId(), false, correlationId));
         return patientDto;
 
     }
@@ -309,7 +305,7 @@ public class PatientServiceImpl implements PatientService {
      * Retrieves a person by ID from the Demographic Service.
      */
     @Override
-    public PersonDto getPerson(long personId, boolean includeVoided) {
-        return demographicFeignClient.getPerson(personId, includeVoided).getBody();
+    public PersonDto getPerson(long personId, boolean includeVoided, String correlationId) {
+        return demographicFeignClient.getPerson(correlationId, personId, includeVoided).getBody();
     }
 }

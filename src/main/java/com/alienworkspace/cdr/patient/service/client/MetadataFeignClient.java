@@ -11,6 +11,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 /**
  * Feign client for interacting with the metadata service.
@@ -83,7 +84,8 @@ public interface MetadataFeignClient {
      * @return The county.
      */
     @GetMapping("/{id}")
-    ResponseEntity<CountyDto> getCounty(@PathVariable int id);
+    ResponseEntity<CountyDto> getCounty(@RequestHeader("X-cdr-correlation-id") String correlationId,
+                                        @PathVariable int id);
 
     /**
      * Gets all cities.

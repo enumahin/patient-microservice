@@ -33,6 +33,10 @@ logging:
           descriptor:
             sql:
               BasicBinder: TRACE
+    com:
+      alienworkspace:
+        cdr:
+          patient: DEBUG
 
 management:
   endpoints:

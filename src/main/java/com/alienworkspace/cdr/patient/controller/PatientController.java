@@ -11,6 +11,7 @@ import com.alienworkspace.cdr.patient.service.PatientIdentifierService;
 import com.alienworkspace.cdr.patient.service.PatientProgramService;
 import com.alienworkspace.cdr.patient.service.PatientService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -100,10 +101,24 @@ public class PatientController {
     @ApiResponse(responseCode = "200", description = "Patient retrieved successfully",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = PatientDto.class)))
     @GetMapping("/{id}")
+    @RateLimiter(name = "getPatient", fallbackMethod = "getPatientFallback")
     public ResponseEntity<PatientDto> getPatient(@RequestHeader("X-cdr-correlation-id") String correlationId,
                                                  @PathVariable long id) {
         log.debug("Retrieving patient with ID: {} with correlationId: {}", id, correlationId);
         return ResponseEntity.ok(patientService.getPatient(id, correlationId));
+    }
+
+    /**
+     * Fallback method for the getPatient method.
+     *
+     * @param id The unique identifier of the patient
+     * @param e The exception that occurred during the request
+     * @return ResponseEntity of PatientDto Patient information with 200 OK status
+     */
+    public ResponseEntity<PatientDto> getPatientFallback(@RequestHeader("X-cdr-correlation-id") String correlationId,
+                                                         @PathVariable long id, Throwable e) {
+        log.error("Retryable Error retrieving patient with ID: {} with correlationId: {}", id, correlationId, e);
+        return ResponseEntity.ok(null);
     }
 
     /**

@@ -6,6 +6,10 @@ spring:
   profiles:
     active:
       - "prod"
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
 
   datasource:
     url: jdbc:mysql://localhost:3306/patient?createDatabaseIfNotExist=true
@@ -36,7 +40,7 @@ logging:
     com:
       alienworkspace:
         cdr:
-          patient: DEBUG
+          patient: ERROR
 
 management:
   endpoints:
@@ -72,3 +76,28 @@ info:
     name: "patient"
     description: "Patient Microservice"
     version: "1.0.0"
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 2
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+  retry:
+    configs:
+      default: # name of the retry
+        maxAttempts: 5
+        waitDuration: 100
+        ignore-exceptions:
+          - com.alienworkspace.cdr.patient.exception.ResourceNotFoundException
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+
+  rate-limiter:
+    instances:
+      getPatient:
+        timeoutDuration: 1s # How long to wait for the quota to be refreshed before trying again or return error
+        limitForPeriod: 1 # Number of requests allowed
+        limitRefreshPeriod: 5s # For every 5 seconds

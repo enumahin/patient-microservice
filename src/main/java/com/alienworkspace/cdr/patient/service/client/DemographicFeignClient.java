@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 /**
  * Feign client for interacting with the demographic service.
  */
-@FeignClient("demographic")
+@FeignClient(name = "demographic", fallback = DemographicFallback.class)
 public interface DemographicFeignClient {
 
     /**

@@ -1,6 +1,7 @@
 package com.alienworkspace.cdr.patient.service.impl;
 
 import com.alienworkspace.cdr.model.dto.patient.PatientDto;
+import com.alienworkspace.cdr.model.dto.person.PersonDto;
 import com.alienworkspace.cdr.model.helper.RecordVoidRequest;
 import com.alienworkspace.cdr.patient.exception.ResourceNotFoundException;
 import com.alienworkspace.cdr.patient.helpers.CurrentUser;
@@ -10,6 +11,7 @@ import com.alienworkspace.cdr.patient.model.mapper.PatientMapper;
 import com.alienworkspace.cdr.patient.repository.PatientIdentifierRepository;
 import com.alienworkspace.cdr.patient.repository.PatientRepository;
 import com.alienworkspace.cdr.patient.service.PatientService;
+import com.alienworkspace.cdr.patient.service.client.DemographicFeignClient;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -64,6 +66,8 @@ public class PatientServiceImpl implements PatientService {
 
     private PatientMapper patientMapper;
 
+    private DemographicFeignClient demographicFeignClient;
+
     /**
      * {@inheritDoc}
      *
@@ -76,8 +80,19 @@ public class PatientServiceImpl implements PatientService {
      * @throws IllegalArgumentException if there are issues with the patient data
      */
     @Override
-    public PatientDto createPatient(PatientDto patientDto) {
-        return patientMapper.toPatientDto(patientRepository.save(patientMapper.toPatient(patientDto)));
+    @Transactional
+    public PatientDto createPatient(PatientDto patientDto, String correlationId) {
+        try {
+            PersonDto person = demographicFeignClient.addPerson(correlationId, patientDto.getPerson()).getBody();
+            if (person == null || person.getPersonId() == null) {
+                throw new IllegalArgumentException("Error creating person: " + person);
+            }
+            patientDto.setPatientId(person.getPersonId());
+            return patientMapper.toPatientDto(patientRepository.save(patientMapper.toPatient(patientDto)));
+        } catch (Exception e) {
+            LOGGER.error("Error creating patient", e);
+            throw new IllegalArgumentException("Error creating patient", e);
+        }
     }
 
     /**
@@ -133,7 +148,16 @@ public class PatientServiceImpl implements PatientService {
      * @throws IllegalArgumentException if there are issues with the void operation
      */
     @Override
+    @Transactional
     public void deletePatient(long id, RecordVoidRequest recordVoidRequest) {
+        try {
+            LOGGER.info("Voiding person with ID: {}", id);
+            demographicFeignClient.deletePerson(id, recordVoidRequest);
+        } catch (Exception e) {
+            LOGGER.error("Error voiding person:", e);
+            throw new IllegalArgumentException("Error voiding person: {}", e);
+        }
+
         patientRepository.findById(id)
                 .map(patient -> {
                     try {
@@ -164,12 +188,15 @@ public class PatientServiceImpl implements PatientService {
      * @throws ResourceNotFoundException if the patient is not found
      */
     @Override
-    public PatientDto getPatient(long id) {
-        return patientMapper.toPatientDto(patientRepository.findById(id)
+    public PatientDto getPatient(long id, String correlationId) {
+        PatientDto patientDto = patientMapper.toPatientDto(patientRepository.findById(id)
                 .orElseThrow(() -> {
-                    LOGGER.error("Patient With Id: {} not found", id);
+                    LOGGER.error("Patient With Id: {} not found. CorrelationId: {}", id, correlationId);
                     return new ResourceNotFoundException("Patient", "Id", String.valueOf(id));
                 }));
+        patientDto.setPerson(getPerson(patientDto.getPatientId(), false, correlationId));
+        return patientDto;
+
     }
 
     /**
@@ -270,4 +297,15 @@ public class PatientServiceImpl implements PatientService {
                 .toList();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * Implementation details:
+     * Retrieves a person by ID from the Demographic Service.
+     */
+    @Override
+    public PersonDto getPerson(long personId, boolean includeVoided, String correlationId) {
+        return demographicFeignClient.getPerson(correlationId, personId, includeVoided).getBody();
+    }
 }

@@ -6,6 +6,10 @@ spring:
   profiles:
     active:
       - "prod"
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
 
   datasource:
     url: jdbc:mysql://localhost:3306/patient?createDatabaseIfNotExist=true
@@ -33,12 +37,67 @@ logging:
           descriptor:
             sql:
               BasicBinder: TRACE
+    com:
+      alienworkspace:
+        cdr:
+          patient: ERROR
 
 management:
   endpoints:
     web:
       exposure:
         include: "*"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
+    shutdown:
+      access: unrestricted # Allow gracefully shutdown of the microservice
+  info:
+    env:
+      enabled: true # Enable display of the microservice info in the actuator endpoints
+eureka:
+  instance:
+    preferIpAddress: true # prefer the IP address the client registered with
+  client:
+    fetchRegistry: true # fetch registry details of other microservices
+    registerWithEureka: true # Tells Eureka to register with Itself
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+
+info:
+  app:
+    name: "patient"
+    description: "Patient Microservice"
+    version: "1.0.0"
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 2
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+  retry:
+    configs:
+      default: # name of the retry
+        maxAttempts: 5
+        waitDuration: 100
+        ignore-exceptions:
+          - com.alienworkspace.cdr.patient.exception.ResourceNotFoundException
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+
+  rate-limiter:
+    instances:
+      getPatient:
+        timeoutDuration: 1s # How long to wait for the quota to be refreshed before trying again or return error
+        limitForPeriod: 1 # Number of requests allowed
+        limitRefreshPeriod: 5s # For every 5 seconds

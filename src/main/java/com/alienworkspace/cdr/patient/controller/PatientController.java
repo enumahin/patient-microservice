@@ -11,6 +11,7 @@ import com.alienworkspace.cdr.patient.service.PatientIdentifierService;
 import com.alienworkspace.cdr.patient.service.PatientProgramService;
 import com.alienworkspace.cdr.patient.service.PatientService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,6 +20,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -65,6 +69,8 @@ import org.springframework.web.bind.annotation.RestController;
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Dependency injection by Spring; safe to store")
 public class PatientController {
 
+    private static final Logger log = LoggerFactory.getLogger(PatientController.class);
+
     private final PatientService patientService;
     private final PatientIdentifierService patientIdentifierService;
     private final PatientProgramService patientProgramService;
@@ -95,8 +101,24 @@ public class PatientController {
     @ApiResponse(responseCode = "200", description = "Patient retrieved successfully",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = PatientDto.class)))
     @GetMapping("/{id}")
-    public ResponseEntity<PatientDto> getPatient(@PathVariable int id) {
-        return ResponseEntity.ok(patientService.getPatient(id));
+    @RateLimiter(name = "getPatient", fallbackMethod = "getPatientFallback")
+    public ResponseEntity<PatientDto> getPatient(@RequestHeader("X-cdr-correlation-id") String correlationId,
+                                                 @PathVariable long id) {
+        log.debug("Retrieving patient with ID: {} with correlationId: {}", id, correlationId);
+        return ResponseEntity.ok(patientService.getPatient(id, correlationId));
+    }
+
+    /**
+     * Fallback method for the getPatient method.
+     *
+     * @param id The unique identifier of the patient
+     * @param e The exception that occurred during the request
+     * @return ResponseEntity of PatientDto Patient information with 200 OK status
+     */
+    public ResponseEntity<PatientDto> getPatientFallback(@RequestHeader("X-cdr-correlation-id") String correlationId,
+                                                         @PathVariable long id, Throwable e) {
+        log.error("Retryable Error retrieving patient with ID: {} with correlationId: {}", id, correlationId, e);
+        return ResponseEntity.ok(null);
     }
 
     /**
@@ -111,8 +133,10 @@ public class PatientController {
     @ApiResponse(responseCode = "201", description = "Patient created successfully",
             content = {@Content(mediaType = "application/json", schema = @Schema(implementation = PatientDto.class))})
     @PostMapping
-    public ResponseEntity<PatientDto> createPatient(@Valid @RequestBody PatientDto patientDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(patientService.createPatient(patientDto));
+    public ResponseEntity<PatientDto> createPatient(@RequestHeader("X-cdr-correlation-id") String correlationId,
+                                                    @Valid @RequestBody PatientDto patientDto) {
+        log.debug("Creating patient with correlationId: {}", correlationId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(patientService.createPatient(patientDto, correlationId));
     }
 
     /**

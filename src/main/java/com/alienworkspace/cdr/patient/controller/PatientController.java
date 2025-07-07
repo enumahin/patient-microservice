@@ -104,7 +104,7 @@ public class PatientController {
     @RateLimiter(name = "getPatient", fallbackMethod = "getPatientFallback")
     public ResponseEntity<PatientDto> getPatient(@RequestHeader("X-cdr-correlation-id") String correlationId,
                                                  @PathVariable long id) {
-        log.debug("Retrieving patient with ID: {} with correlationId: {}", id, correlationId);
+        log.debug("Retrieving patient with ID: {}", id);
         return ResponseEntity.ok(patientService.getPatient(id, correlationId));
     }
 

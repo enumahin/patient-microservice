@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 /**
  * Feign client for interacting with the demographic service.
@@ -29,8 +28,7 @@ public interface DemographicFeignClient {
      * @return The person.
      */
     @GetMapping(DEMOGRAPHIC_BASE_URL + "/people/{id}/{includeVoided}")
-    ResponseEntity<PersonDto> getPerson(@RequestHeader("X-cdr-correlation-id") String correlationId,
-                                        @PathVariable("id") long id,
+    ResponseEntity<PersonDto> getPerson(@PathVariable("id") long id,
                                         @PathVariable("includeVoided") boolean includeVoided);
 
     /**
@@ -40,8 +38,7 @@ public interface DemographicFeignClient {
      * @return The added person.
      */
     @PostMapping(DEMOGRAPHIC_BASE_URL + "/people")
-    ResponseEntity<PersonDto> addPerson(@RequestHeader("X-cdr-correlation-id") String correlationId,
-                                        @Valid @RequestBody PersonDto personDto);
+    ResponseEntity<PersonDto> addPerson(@Valid @RequestBody PersonDto personDto);
 
     /**
      * Deletes a person.

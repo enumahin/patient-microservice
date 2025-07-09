@@ -19,7 +19,7 @@ public class DemographicFallback implements DemographicFeignClient {
      * @return The person.
      */
     @Override
-    public ResponseEntity<PersonDto> getPerson(String correlationId, long id, boolean includeVoided) {
+    public ResponseEntity<PersonDto> getPerson(long id, boolean includeVoided) {
         return ResponseEntity.ok(null);
     }
 
@@ -30,7 +30,7 @@ public class DemographicFallback implements DemographicFeignClient {
      * @return The added person.
      */
     @Override
-    public ResponseEntity<PersonDto> addPerson(String correlationId, PersonDto personDto) {
+    public ResponseEntity<PersonDto> addPerson(PersonDto personDto) {
         return ResponseEntity.ok(null);
     }
 

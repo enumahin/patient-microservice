@@ -92,7 +92,7 @@ class PatientServiceIntegrationTest extends AbstractionContainerBaseTest {
         PatientDto patientDto = patientDtoBuilder.build();
 
         // Act
-        PatientDto createdPatient = patientService.createPatient(patientDto, "CORRELATION_ID");
+        PatientDto createdPatient = patientService.createPatient(patientDto);
 
         // Assert
         assertNotNull(createdPatient);
@@ -104,7 +104,7 @@ class PatientServiceIntegrationTest extends AbstractionContainerBaseTest {
     @DisplayName("Test Update Patient")
     void testUpdatePatient() {
         // Arrange
-        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build(), "CORRELATION_ID");
+        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build());
         PatientDto updateDto = PatientDto.builder()
                 .allergies("Updated Allergies")
                 .build();
@@ -121,7 +121,7 @@ class PatientServiceIntegrationTest extends AbstractionContainerBaseTest {
     @DisplayName("Test Delete (Void) Patient")
     void testDeletePatient() {
         // Arrange
-        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build(), "CORRELATION_ID");
+        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build());
         RecordVoidRequest voidRequest = RecordVoidRequest.builder()
                 .voidReason("Test void reason")
                 .build();
@@ -139,10 +139,10 @@ class PatientServiceIntegrationTest extends AbstractionContainerBaseTest {
     @DisplayName("Test Get Patient By ID")
     void testGetPatient() {
         // Arrange
-        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build(), "CORRELATION_ID");
+        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build());
 
         // Act
-        PatientDto foundPatient = patientService.getPatient(patientDto.getPatientId(), "Correlation ID");
+        PatientDto foundPatient = patientService.getPatient(patientDto.getPatientId());
 
         // Assert
         assertNotNull(foundPatient);
@@ -154,7 +154,7 @@ class PatientServiceIntegrationTest extends AbstractionContainerBaseTest {
     @DisplayName("Test Get Patient By Identifier")
     void testGetPatientByIdentifier() {
         // Arrange
-        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build(), "CORRELATION_ID");
+        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build());
         Patient patient = patientRepository.findById(patientDto.getPatientId()).orElseThrow();
         
         PatientIdentifier identifier = PatientIdentifier.builder()
@@ -178,7 +178,7 @@ class PatientServiceIntegrationTest extends AbstractionContainerBaseTest {
     @DisplayName("Test Get Patients By Program")
     void testGetPatientsByProgram() {
         // Arrange
-        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build(), "CORRELATION_ID");
+        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build());
         Patient patient = patientRepository.findById(patientDto.getPatientId()).orElseThrow();
         
         PatientProgram patientProgram = PatientProgram.builder()
@@ -217,8 +217,8 @@ class PatientServiceIntegrationTest extends AbstractionContainerBaseTest {
                 .build();
         inactiveProgram = programRepository.save(inactiveProgram);
 
-        PatientDto patient1 = patientService.createPatient(patientDtoBuilder.build(), "CORRELATION_ID");
-        PatientDto patient2 = patientService.createPatient(patientDtoBuilder.build(), "CORRELATION_ID");
+        PatientDto patient1 = patientService.createPatient(patientDtoBuilder.build());
+        PatientDto patient2 = patientService.createPatient(patientDtoBuilder.build());
         
         Patient patientInActiveProgram = patientRepository.findById(patient1.getPatientId()).orElseThrow();
         Patient patientInInactiveProgram = patientRepository.findById(patient2.getPatientId()).orElseThrow();
@@ -253,7 +253,7 @@ class PatientServiceIntegrationTest extends AbstractionContainerBaseTest {
     @DisplayName("Test Get Patients By Identifier Type")
     void testGetPatientsByIdentifierType() {
         // Arrange
-        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build(), "CORRELATION_ID");
+        PatientDto patientDto = patientService.createPatient(patientDtoBuilder.build());
         Patient patient = patientRepository.findById(patientDto.getPatientId()).orElseThrow();
         
         PatientIdentifier identifier = PatientIdentifier.builder()
@@ -277,7 +277,7 @@ class PatientServiceIntegrationTest extends AbstractionContainerBaseTest {
     @DisplayName("Test Patient Not Found Exception")
     void testPatientNotFoundException() {
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> patientService.getPatient(999L, "Correlation ID"));
+        assertThrows(ResourceNotFoundException.class, () -> patientService.getPatient(999L));
         assertThrows(ResourceNotFoundException.class, () -> patientService.getPatientByIdentifier("nonexistent"));
     }
 } 

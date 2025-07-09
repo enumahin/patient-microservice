@@ -81,13 +81,13 @@ public class PatientServiceImpl implements PatientService {
      */
     @Override
     @Transactional
-    public PatientDto createPatient(PatientDto patientDto, String correlationId) {
+    public PatientDto createPatient(PatientDto patientDto) {
         try {
-            PersonDto person = demographicFeignClient.addPerson(correlationId, patientDto.getPerson()).getBody();
-            if (person == null || person.getPersonId() == null) {
-                throw new IllegalArgumentException("Error creating person: " + person);
-            }
-            patientDto.setPatientId(person.getPersonId());
+//            PersonDto person = demographicFeignClient.addPerson(patientDto.getPerson()).getBody();
+//            if (person == null || person.getPersonId() == null) {
+//                throw new IllegalArgumentException("Error creating person: " + person);
+//            }
+//            patientDto.setPatientId(person.getPersonId());
             return patientMapper.toPatientDto(patientRepository.save(patientMapper.toPatient(patientDto)));
         } catch (Exception e) {
             LOGGER.error("Error creating patient", e);
@@ -188,13 +188,13 @@ public class PatientServiceImpl implements PatientService {
      * @throws ResourceNotFoundException if the patient is not found
      */
     @Override
-    public PatientDto getPatient(long id, String correlationId) {
+    public PatientDto getPatient(long id) {
         PatientDto patientDto = patientMapper.toPatientDto(patientRepository.findById(id)
                 .orElseThrow(() -> {
-                    LOGGER.error("Patient With Id: {} not found. CorrelationId: {}", id, correlationId);
+                    LOGGER.error("Patient With Id: {} not found.", id);
                     return new ResourceNotFoundException("Patient", "Id", String.valueOf(id));
                 }));
-        patientDto.setPerson(getPerson(patientDto.getPatientId(), false, correlationId));
+        patientDto.setPerson(getPerson(patientDto.getPatientId(), false));
         return patientDto;
 
     }
@@ -305,7 +305,7 @@ public class PatientServiceImpl implements PatientService {
      * Retrieves a person by ID from the Demographic Service.
      */
     @Override
-    public PersonDto getPerson(long personId, boolean includeVoided, String correlationId) {
-        return demographicFeignClient.getPerson(correlationId, personId, includeVoided).getBody();
+    public PersonDto getPerson(long personId, boolean includeVoided) {
+        return demographicFeignClient.getPerson(personId, includeVoided).getBody();
     }
 }

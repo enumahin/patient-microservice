@@ -72,7 +72,7 @@ class PatientServiceTest {
         when(patientMapper.toPatientDto(any(Patient.class))).thenReturn(testPatientDto);
 
         // Act
-        PatientDto result = patientService.createPatient(testPatientDto, "CORRELATION_ID");
+        PatientDto result = patientService.createPatient(testPatientDto);
 
         // Assert
         assertNotNull(result);
@@ -165,7 +165,7 @@ class PatientServiceTest {
         when(patientMapper.toPatientDto(any(Patient.class))).thenReturn(testPatientDto);
 
         // Act
-        PatientDto result = patientService.getPatient(1L, "Correlation ID");
+        PatientDto result = patientService.getPatient(1L);
 
         // Assert
         assertNotNull(result);
@@ -181,7 +181,7 @@ class PatientServiceTest {
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class,
-                () -> patientService.getPatient(1L, "Correlation ID"));
+                () -> patientService.getPatient(1L));
         verify(patientRepository).findById(1L);
     }
 

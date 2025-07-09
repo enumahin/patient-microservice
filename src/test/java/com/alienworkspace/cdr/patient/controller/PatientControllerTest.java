@@ -78,7 +78,7 @@ class PatientControllerTest {
     @Test
     @DisplayName("GET " + Constants.PATIENT_BASE_URL + "/{id} - Get Patient by ID")
     void testGetPatient() throws Exception {
-        when(patientService.getPatient(anyLong(), anyString())).thenReturn(testPatientDto);
+        when(patientService.getPatient(anyLong())).thenReturn(testPatientDto);
 
         mockMvc.perform(get(Constants.PATIENT_BASE_URL + "/{id}", 1))
                 .andExpect(status().isOk())
@@ -88,7 +88,7 @@ class PatientControllerTest {
     @Test
     @DisplayName("POST " + Constants.PATIENT_BASE_URL + " - Create Patient")
     void testCreatePatient() throws Exception {
-        when(patientService.createPatient(any(PatientDto.class), anyString())).thenReturn(testPatientDto);
+        when(patientService.createPatient(any(PatientDto.class))).thenReturn(testPatientDto);
 
         mockMvc.perform(post(Constants.PATIENT_BASE_URL)
                 .contentType(MediaType.APPLICATION_JSON)

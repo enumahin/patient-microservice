@@ -10,6 +10,13 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+    function:
+      definition: patientConsumer
+    stream:
+      bindings:
+        patientConsumer-in-0: # When we use 'out,' the destination is an exchange; when we use 'in' the destination is a queue
+          destination: patient-data # The name of the exchange we want to publish to
+          group: ${spring.application.name}
 
   datasource:
     url: jdbc:mysql://localhost:3306/patient?createDatabaseIfNotExist=true
@@ -17,30 +24,20 @@ spring:
     password: root
 
   jpa:
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.MySQL8Dialect
-    properties:
-      hibernate:
-        format_sql: true
 
 server:
   port: 8030
 
 logging:
   level:
-    org:
-      hibernate:
-        SQL: DEBUG
-        type:
-          descriptor:
-            sql:
-              BasicBinder: TRACE
     com:
       alienworkspace:
         cdr:
-          patient: ERROR
+          patient: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 

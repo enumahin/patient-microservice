@@ -37,7 +37,7 @@ public interface PatientService {
      * @param patientDto Patient DTO
      * @return PatientDto PatientDto
      */
-    PatientDto createPatient(PatientDto patientDto, String correlationId);
+    PatientDto createPatient(PatientDto patientDto);
 
     /**
      * Updates a Patient.
@@ -62,7 +62,7 @@ public interface PatientService {
      * @param id The id of the Patient
      * @return PatientDto
      */
-    PatientDto getPatient(long id, String correlationId);
+    PatientDto getPatient(long id);
 
     /**
      * Gets a Patient.
@@ -78,7 +78,7 @@ public interface PatientService {
      * @param id The id of the Person
      * @return PersonDto
      */
-    PersonDto getPerson(long id, boolean includeVoided, String correlationId);
+    PersonDto getPerson(long id, boolean includeVoided);
 
     /**
      * Gets all Patients.
